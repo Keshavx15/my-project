@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SVG Drawing Tool</title>
+<style>
+  body { font-family: Arial, sans-serif; padding: 16px; }
+  .wrap { border: 2px solid #444; padding: 12px; width: 760px; }
+  h2 { margin: 0 0 12px; }
+  .frame { border: 2px solid #999; background: #f6f6f6; }
+  .toolbar { margin-bottom: 10px; display: flex; gap: 8px; align-items: center; }
+  .toolbar label { font-size: 14px; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <h2>SVG Drawing Tool</h2>
+
+    <div class="toolbar">
+      <label>Color <input type="color" id="color" value="#1e90ff"></label>
+      <label>Width <input type="number" id="width" min="1" max="20" value="3" style="width:60px"></label>
+      <button id="clear">Clear</button>
+    </div>
+
+    <svg id="board" class="frame" width="740" height="420"></svg>
+  </div>
+
+<script>
+  const svg = document.getElementById('board');
+  const color = document.getElementById('color');
+  const width = document.getElementById('width');
+  const clearBtn = document.getElementById('clear');
+
+  let drawing = false;
+  let path = null;
+
+  function p(e) {
+    const r = svg.getBoundingClientRect();
+    return { x: e.clientX - r.left, y: e.clientY - r.top };
+  }
+
+  svg.addEventListener('mousedown', (e) => {
+    drawing = true;
+    const { x, y } = p(e);
+    path = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+    path.setAttribute('fill', 'none');
+    path.setAttribute('stroke', color.value);
+    path.setAttribute('stroke-width', width.value);
+    path.setAttribute('stroke-linecap', 'round');
+    path.setAttribute('stroke-linejoin', 'round');
+    path.setAttribute('points', `${x},${y}`);
+    svg.appendChild(path);
+  });
+
+  svg.addEventListener('mousemove', (e) => {
+    if (!drawing || !path) return;
+    const { x, y } = p(e);
+    path.setAttribute('points', path.getAttribute('points') + ` ${x},${y}`);
+  });
+
+  ['mouseup', 'mouseleave'].forEach(evt =>
+    svg.addEventListener(evt, () => { drawing = false; path = null; })
+  );
+
+  clearBtn.addEventListener('click', () => {
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+  });
+</script>
+</body>
+</html>
